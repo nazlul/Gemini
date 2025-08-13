@@ -7,6 +7,7 @@ import { useStore } from '@/store/useStore'
 import { fetchCountries, getDialCode, type Country } from '@/lib/countries'
 import { simulateOTPSend, simulateOTPVerify } from '@/lib/otp'
 import Toast from './Toast'
+import Header from './Header'
 
 const phoneSchema = z.object({
   country: z.string().min(1, 'Select country'),
@@ -28,6 +29,7 @@ export default function AuthForm() {
   const [toast, setToast] = useState<string|null>(null)
   const [fullPhone, setFullPhone] = useState('')
   const setUser = useStore((s: any) => s.setUser)
+  const darkMode = useStore((s: any) => s.darkMode)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const phoneForm = useForm({ resolver: zodResolver(phoneSchema) })
@@ -92,27 +94,23 @@ export default function AuthForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
+    <div className={`min-h-screen flex flex-col transition-colors ${darkMode ? 'bg-[#1B1C1D]' : 'bg-[#f0f4f9] light'}`}>
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-800">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">G</span>
-          </div>
-          <span className="text-white font-medium">Gemini</span>
-        </div>
+      <div className="sticky top-0 z-10">
+        <Header title="Gemini" />
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-light text-blue-400 mb-2">
+            <div className="w-16 h-16 gemini-gradient rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-white text-2xl font-bold">G</span>
+            </div>
+            <h1 className={`text-3xl font-light mb-2 ${darkMode ? 'text-[#E8EAED]' : 'text-[#202124]'}`}>
               {step === 'phone' ? 'Welcome to Gemini' : 'Verify your phone'}
             </h1>
-            <p className="text-gray-400 text-sm">
+            <p className={`text-sm ${darkMode ? 'text-[#9AA0A6]' : 'text-[#5F6368]'}`}>
               {step === 'phone' ? 'Enter your phone number to get started' : `We sent a code to ${fullPhone}`}
             </p>
           </div>
@@ -130,10 +128,10 @@ export default function AuthForm() {
                   }}
                   onFocus={() => setShowDropdown(true)}
                   placeholder="Select country"
-                  className="w-full p-4 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none transition-colors"
+                  className="gemini-input w-full p-4"
                 />
                 {showDropdown && (
-                  <div className="absolute z-10 w-full bg-gray-800 border border-gray-700 rounded-xl mt-2 max-h-48 overflow-y-auto">
+                  <div className="absolute z-10 w-full gemini-card mt-2 max-h-48 overflow-y-auto scrollbar-thin">
                     {filteredCountries.map(c => (
                       <div
                         key={c.cca2}
@@ -143,7 +141,9 @@ export default function AuthForm() {
                           setShowDropdown(false)
                           phoneForm.setValue('country', c.cca2)
                         }}
-                        className="p-4 hover:bg-gray-700 cursor-pointer text-white transition-colors"
+                        className={`p-4 cursor-pointer transition-colors ${
+                          darkMode ? 'hover:bg-[#3A3D40] text-[#E8EAED]' : 'hover:bg-[#E8EAED] text-[#202124]'
+                        }`}
                       >
                         {c.flag} {c.name.common} ({getDialCode(c)})
                       </div>
@@ -152,19 +152,19 @@ export default function AuthForm() {
                 )}
               </div>
               <input type="hidden" {...phoneForm.register('country')} />
-              {phoneForm.formState.errors.country && <p className="text-red-400 text-sm">{phoneForm.formState.errors.country.message}</p>}
+              {phoneForm.formState.errors.country && <p className="text-red-500 text-sm">{phoneForm.formState.errors.country.message}</p>}
               
               <input 
                 {...phoneForm.register('phone')} 
                 placeholder="Phone number" 
-                className="w-full p-4 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none transition-colors" 
+                className="gemini-input w-full p-4" 
               />
-              {phoneForm.formState.errors.phone && <p className="text-red-400 text-sm">{phoneForm.formState.errors.phone.message}</p>}
+              {phoneForm.formState.errors.phone && <p className="text-red-500 text-sm">{phoneForm.formState.errors.phone.message}</p>}
               
               <button 
                 type="submit" 
                 disabled={loading} 
-                className="w-full p-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                className="gemini-button w-full p-4 flex items-center justify-center gap-2"
               >
                 {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
                 {loading ? 'Sending...' : 'Continue'}
@@ -175,31 +175,31 @@ export default function AuthForm() {
               <input 
                 {...otpForm.register('code')} 
                 placeholder="Enter 6-digit code" 
-                className="w-full p-4 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none transition-colors text-center text-2xl tracking-widest" 
+                className="gemini-input w-full p-4 text-center text-2xl tracking-widest" 
                 maxLength={6} 
               />
-              {otpForm.formState.errors.code && <p className="text-red-400 text-sm text-center">{otpForm.formState.errors.code.message}</p>}
+              {otpForm.formState.errors.code && <p className="text-red-500 text-sm text-center">{otpForm.formState.errors.code.message}</p>}
               
               <div className="flex gap-3">
                 <button 
                   type="button" 
                   onClick={() => setStep('phone')} 
-                  className="flex-1 p-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl font-medium transition-colors"
+                  className="gemini-button-secondary flex-1 p-4"
                 >
                   Back
                 </button>
                 <button 
                   type="submit" 
                   disabled={loading} 
-                  className="flex-1 p-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                  className="gemini-button flex-1 p-4 flex items-center justify-center gap-2"
                 >
                   {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
                   {loading ? 'Verifying...' : 'Verify'}
                 </button>
               </div>
               
-              <p className="text-center text-gray-400 text-sm mt-4">
-                Use <span className="text-blue-400 font-mono">123456</span> or <span className="text-blue-400 font-mono">000000</span> for demo
+              <p className={`text-center text-sm mt-4 ${darkMode ? 'text-[#9AA0A6]' : 'text-[#5F6368]'}`}>
+                Use <span className="text-[#4285F4] font-mono">123456</span> or <span className="text-[#4285F4] font-mono">000000</span> for demo
               </p>
             </form>
           )}
